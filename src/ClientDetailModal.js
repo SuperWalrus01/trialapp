@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { getPriorityExplanation, calculateMetricRankings } from './prioritisation';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import './ClientDetailModal.css';
 
 function ClientDetailModal({ client, priority, allClients, onClose }) {
@@ -11,6 +12,13 @@ function ClientDetailModal({ client, priority, allClients, onClose }) {
   // Calculate rankings for this client
   const rankings = calculateMetricRankings(client, allClients);
   const explanation = getPriorityExplanation(client, priority, rankings);
+
+  // Prepare pie chart data - showing score contribution breakdown
+  const pieData = [
+    { name: 'AUA Contribution', value: priority.breakdown.auaScore, color: '#7c3aed' },
+    { name: 'Fees Contribution', value: priority.breakdown.feesScore, color: '#a78bfa' },
+    { name: 'Engagement Contribution', value: priority.breakdown.engagementScore, color: '#c4b5fd' }
+  ];
 
   const handleGenerateEmail = async () => {
     setGenerating(true);
@@ -61,6 +69,18 @@ function ClientDetailModal({ client, priority, allClients, onClose }) {
     return `£${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
+  const CustomPieTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="custom-tooltip">
+          <p><strong>{payload[0].name}</strong></p>
+          <p>{payload[0].value.toFixed(1)} points</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -96,14 +116,45 @@ function ClientDetailModal({ client, priority, allClients, onClose }) {
           {/* Portfolio Information */}
           <section className="detail-section">
             <h3>Portfolio Overview</h3>
-            <div className="detail-grid">
-              <div className="detail-item highlight">
-                <span className="detail-label">Total AUA:</span>
-                <span className="detail-value">{formatCurrency(client['Total Portfolio AUA'])}</span>
+            <div className="portfolio-layout">
+              <div className="portfolio-metrics">
+                <div className="detail-item highlight">
+                  <span className="detail-label">Total AUA:</span>
+                  <span className="detail-value">{formatCurrency(client['Total Portfolio AUA'])}</span>
+                </div>
+                <div className="detail-item highlight">
+                  <span className="detail-label">Total Fees Paid:</span>
+                  <span className="detail-value">{formatCurrency(client['TotalFees'])}</span>
+                </div>
               </div>
-              <div className="detail-item highlight">
-                <span className="detail-label">Total Fees Paid:</span>
-                <span className="detail-value">{formatCurrency(client['TotalFees'])}</span>
+              
+              {/* Priority Score Breakdown Pie Chart */}
+              <div className="portfolio-chart">
+                <h4>Priority Score Breakdown</h4>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomPieTooltip />} />
+                    <Legend 
+                      verticalAlign="bottom" 
+                      align="left"
+                      height={36}
+                      formatter={(value, entry) => `${value} (${entry.payload.value.toFixed(1)} pts)`}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
             </div>
           </section>

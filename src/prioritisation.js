@@ -152,9 +152,9 @@ export function calculateStatistics(allClients) {
 
   return {
     tierDistribution: [
-      { tier: 'High', count: tierCounts.High, color: '#166534' },
-      { tier: 'Medium', count: tierCounts.Medium, color: '#92400e' },
-      { tier: 'Low', count: tierCounts.Low, color: '#991b1b' }
+      { tier: 'High', count: tierCounts.High, color: '#10b981' },
+      { tier: 'Medium', count: tierCounts.Medium, color: '#f97316' },
+      { tier: 'Low', count: tierCounts.Low, color: '#ef4444' }
     ],
     totalClients: allClients.length,
     averageScore: allClients.length > 0 
